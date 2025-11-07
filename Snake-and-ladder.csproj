@@ -6,6 +6,7 @@
     <RootNamespace>Snake_and_ladder</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <StartupObject>Snake_and_ladder.UC2_Dice_Roll</StartupObject>
   </PropertyGroup>
 
 </Project>
