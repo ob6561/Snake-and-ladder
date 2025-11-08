@@ -6,62 +6,69 @@ namespace Snake_and_ladder
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Snake and Ladder Game - UC6");
+            Console.WriteLine("Snake & Ladder - UC7 (Two Players)");
             Console.WriteLine("Rules:");
-            Console.WriteLine(" - Player starts at 0");
-            Console.WriteLine(" - Dice: 1 to 6");
-            Console.WriteLine(" - Options: 0=No Play, 1=Ladder, 2=Snake");
-            Console.WriteLine(" - Must land EXACTLY on 100 to win; if a move goes beyond 100, stay put\n");
+            Console.WriteLine(" - Start at 0. Dice 1..6.");
+            Console.WriteLine(" - Options: 0=No Play, 1=Ladder (extra turn), 2=Snake.");
+            Console.WriteLine(" - Must land EXACTLY on 100 to win; overshoot -> stay put.\n");
 
-            int pos = 0;
-            int diceRolls = 0;
+            int[] pos = new int[2];         // pos[0] = P1, pos[1] = P2 (start at 0)
+            int[] rolls = new int[2];       // dice roll count per player
+            int current = 0;                // 0 = Player 1, 1 = Player 2
+            int turnNo = 0;                 // global turn counter (each dice throw increments)
             Random rnd = new Random();
 
-            // Play until we reach EXACTLY 100
-            while (pos < 100)
+            while (pos[0] < 100 && pos[1] < 100)
             {
-                int before = pos;
+                turnNo++;
+                string playerName = current == 0 ? "Player 1" : "Player 2";
+
+                int before = pos[current];
 
                 // Roll dice
-                int dice = rnd.Next(1, 7);   // 1..6
-                diceRolls++;
+                int dice = rnd.Next(1, 7);
+                rolls[current]++;
 
                 // Pick option
                 int option = rnd.Next(0, 3); // 0=No Play, 1=Ladder, 2=Snake
+                string optionText = option == 0 ? "No Play" : option == 1 ? "Ladder" : "Snake";
 
-                string optionText;
-                switch (option)
+                // Apply move with exact-100 rule
+                int after = before;
+                if (option == 1)            // Ladder
                 {
-                    case 0: // No Play
-                        optionText = "No Play";
-                        // pos unchanged
-                        break;
+                    if (before + dice <= 100)
+                        after = before + dice;   // valid climb
+                    // else stay (need exact roll)
+                }
+                else if (option == 2)       // Snake
+                {
+                    after = Math.Max(0, before - dice);
+                }
+                // option==0 -> No Play -> after == before
 
-                    case 1: // Ladder (forward), but respect exact-100 rule
-                        optionText = "Ladder";
-                        if (before + dice <= 100)
-                            pos = before + dice;
-                        // else stay at 'before'
-                        break;
+                pos[current] = after;
 
-                    default: // 2: Snake (backward, not below 0)
-                        optionText = "Snake";
-                        pos = Math.Max(0, before - dice);
-                        break;
+                // Per-turn log
+                Console.WriteLine(
+                    $"Turn {turnNo}: {playerName} | Dice={dice}, Option={optionText}, Position: {before} -> {after}"
+                );
+
+                // Check win
+                if (pos[current] == 100)
+                {
+                    Console.WriteLine($"\n🎉 {playerName} WINS! 🎉");
+                    Console.WriteLine($"Rolls: Player 1 = {rolls[0]}, Player 2 = {rolls[1]}");
+                    break;
                 }
 
-                // Enforce exact-100 rule explicitly (safety net)
-                if (pos > 100) pos = before;
-
-                // Per-turn report (UC6 requirement)
-                Console.WriteLine(
-                    $"Turn {diceRolls}: Dice={dice}, Option={optionText}, Position: {before} -> {pos}"
-                );
+                // Turn logic: Ladder grants extra turn; otherwise switch player
+                if (option != 1)
+                {
+                    current = 1 - current; // switch 0 <-> 1
+                }
+                // else: same player goes again
             }
-
-            // Final summary (UC6 requirement)
-            Console.WriteLine($"\n🎉 Player reached EXACTLY 100!");
-            Console.WriteLine($"Total dice rolls to win: {diceRolls}");
         }
     }
 }
